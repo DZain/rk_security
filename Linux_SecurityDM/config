@@ -1,0 +1,13 @@
+ROOT_DEV=/dev/mmcblk2p8
+INIT=/init
+#ROOTFS_PATH=../../../images/rootfs.squashfs
+KERNEL_PATH=../../../kernel/arch/arm64/boot/Image
+RESOURCE_PATH=../../../kernel/resource.img
+key=000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+inputimg=../../../images/rootfs.ext2
+#RAMDISK_PATH=
+#cipher=
+#BOOT_ONLY=1
+#outputfile=
+#filetype=
+#sectors=
