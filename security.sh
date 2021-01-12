@@ -11,7 +11,7 @@ MESG ()
 {
 	if [ $1 -le ${DEBUG_LEVEL} ]; then
 		shift 1
-		echo "$@"
+		echo -e "$@"
 	fi
 }
 
@@ -126,17 +126,22 @@ do
 			shift 2
 			;;
 		--chip)
+			# 1. make sure chip has be supported in rk_sign_tool
+			test -z "`cat ${LINUX_SIGN_TOOL}/setting.ini.in | grep support_chip | grep $2`" && ERROR_EXIT "Not support chip \nchip must be `cat ${LINUX_SIGN_TOOL}/setting.ini.in | grep support_chip`"
+			# 2. make sure key has be existed
+			test -d "${KEY}/$2" || ERROR_EXIT "Not key in ${KEY}/$2"
+
 			sed -i "s/^CHIP=.*/CHIP=$2/g" .setting.ini
 			shift 2
 			source .setting.ini # update
-			;;
-		--rk_sign_tool)
+
 			rm ${LINUX_SIGN_TOOL}/setting.ini
 			cp ${LINUX_SIGN_TOOL}/setting.ini.in ${LINUX_SIGN_TOOL}/setting.ini
 			sed -i "s/\${CHIP}/${CHIP}/g" ${LINUX_SIGN_TOOL}/setting.ini
 			sed -i "s:\${KEY}:${KEY}:g" ${LINUX_SIGN_TOOL}/setting.ini
 			sed -i "s/\${EXCLUDE_BOOT}/${EXCLUDE_BOOT}/g" ${LINUX_SIGN_TOOL}/setting.ini
-
+			;;
+		--rk_sign_tool)
 			shift 1
 			if [ "$1"x == "all"x ]; then
 				UBOOT_PATH=$2
