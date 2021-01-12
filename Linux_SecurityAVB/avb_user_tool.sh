@@ -2,10 +2,11 @@
 
 set -e
 
-KEYS=avb_keys
+PWD=$(cd "$(dirname "$0")";pwd)
+KEYS=${PWD}/avb_keys
 PRODUCT_ID=0123456789ABCDE
-SCRIPTS=scripts
-OUT=out
+SCRIPTS=${PWD}/scripts
+OUT=${PWD}/out
 
 usage()
 {
@@ -38,13 +39,13 @@ Generate_keys()
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -outform PEM -out $KEYS/testkey_puk.pem
 
 	# generate certificate.bin and metadata
-	python $SCRIPTS/avbtool make_atx_certificate --output=avb_keys/pik_certificate.bin --subject=avb_keys/temp.bin --subject_key=avb_keys/testkey_pik.pem --subject_is_intermediate_authority --subject_key_version 42 --authority_key=avb_keys/testkey_prk.pem
-	python $SCRIPTS/avbtool make_atx_certificate --output=avb_keys/psk_certificate.bin --subject=avb_keys/product_id.bin --subject_key=avb_keys/testkey_psk.pem --subject_key_version 42 --authority_key=avb_keys/testkey_pik.pem
-	python $SCRIPTS/avbtool make_atx_certificate --output=avb_keys/puk_certificate.bin --subject=avb_keys/product_id.bin --subject_key=avb_keys/testkey_puk.pem --usage=com.google.android.things.vboot.unlock --subject_key_version 42 --authority_key=avb_keys/testkey_pik.pem
-	python $SCRIPTS/avbtool make_atx_metadata --output=avb_keys/metadata.bin --intermediate_key_certificate=avb_keys/pik_certificate.bin --product_key_certificate=avb_keys/psk_certificate.bin
+	python $SCRIPTS/avbtool make_atx_certificate --output=${KEYS}/pik_certificate.bin --subject=${KEYS}/temp.bin --subject_key=${KEYS}/testkey_pik.pem --subject_is_intermediate_authority --subject_key_version 42 --authority_key=${KEYS}/testkey_prk.pem
+	python $SCRIPTS/avbtool make_atx_certificate --output=${KEYS}/psk_certificate.bin --subject=${KEYS}/product_id.bin --subject_key=${KEYS}/testkey_psk.pem --subject_key_version 42 --authority_key=${KEYS}/testkey_pik.pem
+	python $SCRIPTS/avbtool make_atx_certificate --output=${KEYS}/puk_certificate.bin --subject=${KEYS}/product_id.bin --subject_key=${KEYS}/testkey_puk.pem --usage=com.google.android.things.vboot.unlock --subject_key_version 42 --authority_key=${KEYS}/testkey_pik.pem
+	python $SCRIPTS/avbtool make_atx_metadata --output=${KEYS}/metadata.bin --intermediate_key_certificate=${KEYS}/pik_certificate.bin --product_key_certificate=${KEYS}/psk_certificate.bin
 
 	# Generate permanent_attributes.bin
-	python $SCRIPTS/avbtool make_atx_permanent_attributes --output=avb_keys/permanent_attributes.bin --product_id=avb_keys/product_id.bin --root_authority_key=avb_keys/testkey_prk.pem
+	python $SCRIPTS/avbtool make_atx_permanent_attributes --output=${KEYS}/permanent_attributes.bin --product_id=${KEYS}/product_id.bin --root_authority_key=${KEYS}/testkey_prk.pem
 	echo "Generate AVB Keys Done!!!"
 }
 
@@ -61,7 +62,7 @@ signed_image()
 	# - MAX_FOOTER_SIZE = 4096
 	SIZE=$[(SIZE / 4096 + 18) * 4096]
 	echo "set size to ${SIZE}"
-	python $SCRIPTS/avbtool add_hash_footer --image $OUT/${IMAGE}.img --partition_size ${SIZE} --partition_name ${IMAGE} --key avb_keys/testkey_psk.pem --algorithm SHA512_RSA4096
+	python $SCRIPTS/avbtool add_hash_footer --image $OUT/${IMAGE}.img --partition_size ${SIZE} --partition_name ${IMAGE} --key ${KEYS}/testkey_psk.pem --algorithm SHA512_RSA4096
 	echo "Sign $IMAGE Done"
 }
 
